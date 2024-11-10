@@ -2,11 +2,14 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const mongoose = require('mongoose');
+const jwt = require("jsonwebtoken")
 const authService = require('./services/auth');
+const usersRoute = require('./routes/userRoute');
 require('dotenv').config();
 
 const PORT = process.env.PORT || 3000;
 const MONGO_URL = process.env.MONGO_URL;
+const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -27,6 +30,7 @@ const checkApikey = (req, res, next) => {
     }
 };
 
+
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     checkApikey(req, res, next);
@@ -41,6 +45,7 @@ database.once('connected', () => {
 });
 
 app.use('/auth', authService);
+app.use('/users', usersRoute);
 
 app.listen(PORT, () => {
     console.log(`Server is running on Port ${PORT} ....`)
