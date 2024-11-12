@@ -44,7 +44,7 @@ const userSchema = new mongoose.Schema({
     },
     skills: {
         type: [userSkills],
-    }
+    },
 });
 
 module.exports = mongoose.model('User', userSchema);

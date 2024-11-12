@@ -1,16 +1,18 @@
 const express = require('express');
-const userRouter = express.Router();
+const router = express.Router();
 const User = require('../models/User');
 const verifyToken = require('../middlewares/jwtMiddleware');
 
-userRouter.get('/get-users', verifyToken, async (req, res) => {
+router.get('/profile', verifyToken, async (req, res) => {
     try {
-        const users = await User.find({});
-        res.status(200).json({ users });
+        const user = await User.findById(req.userId).select('-password')
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        res.status(200).json({ user });
     } catch (error) {
-        res.status(500).json({ error: "Failed to fetch users"});
+        res.status(500).json({ error: "Failed to fetch profile" });
     }
 });
 
-
-module.exports = userRouter;
+module.exports = router;

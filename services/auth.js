@@ -12,7 +12,7 @@ router.post('/register', async (req, res) => {
         const { username, email, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = new User({ username, email, password: hashedPassword });
-        await user.save();
+        await user.save(); 
         res.status(200).json({
             message: 'User Successfully Added'
         });
@@ -26,7 +26,12 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const { username, email, password } = req.body;
-        const user = await User.findOne({ username });
+        const user = await User.findOne({
+            $or: [
+                { username: username },
+                { email: email }
+            ]
+        });
         if (!user) {
             return res.status(401).json({ error: "Authentication failed" });
         }
@@ -37,7 +42,7 @@ router.post('/login', async (req, res) => {
         const token = jwt.sign(
             { userId: user._id },
             JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '10d' }
         );
         res.status(200).json({token: token});
     } catch (error) {
