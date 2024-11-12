@@ -73,7 +73,7 @@ router.post('/like-project', verifyToken, async (req, res, next) => {
 });
 
 
-router.get('get-liked-projects', verifyToken, async (req, res, next) => {
+router.get('/get-liked-projects', verifyToken, async (req, res, next) => {
    try {
     const user = await User.findById(req.userId);
     
