@@ -28,6 +28,7 @@ const projectActivitySchema = new mongoose.Schema({
     },
     likedProjects: {
         type: [mongoose.Schema.Types.ObjectId],
+        default: {},
         ref: 'Project',
     },
     appliedProjects: {

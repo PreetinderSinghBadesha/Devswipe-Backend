@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const verifyToken = require('../middlewares/jwtMiddleware');
 const Project = require('../models/Project');
+const User = require('../models/User');
 
 router.post('/create-project', verifyToken, async (req, res, next) => {
     try {
@@ -59,27 +60,34 @@ router.post('/like-project', verifyToken, async (req, res, next) => {
         }
 
         await User.findByIdAndUpdate(
-            req.userId, 
+            req.userId,
             { $addToSet: { 'projects.likedProjects': projectId } },
             { new: true }
         );
         
         res.status(200).json({ message: 'Project liked successfully' });
     } catch (error) {
-        res.status(500).json({
-            error: 'Failed to like project',
+        res.status(500).json({ 
+                error: 'Failed to like project', 
+                details: error.message 
         });
     }
 });
 
 
-router.get('get-liked-projects', verifyToken, async (req, res, next) => {
+router.get('/get-liked-projects', verifyToken, async (req, res, next) => {
    try {
-    const user = await User.findById(req.userId);
+    const user = await User.findById(req.userId).populate('projects.likedProjects');
+
+    if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+    res.status(200).json( user.projects.likedProjects);
     
     } catch (error) {
         res.status(500).json({
             error: 'Failed to fetch liked projects',
+            details: error.message
         });
     }
 });
