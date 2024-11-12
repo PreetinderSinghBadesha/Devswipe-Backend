@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const userSocials = new mongoose.Schema({
     githubUsername: {
-        type: String , 
+        type: String,
     },
     linkedin: {
         type: String,
@@ -14,10 +14,25 @@ const userSkills = new mongoose.Schema({
         type: [String],
     },
     frameworks: {
-        type:[String],
+        type: [String],
     },
     softwares: {
         type: [String],
+    },
+});
+
+const projectActivitySchema = new mongoose.Schema({
+    ownProjects: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Project',
+    },
+    likedProjects: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Project',
+    },
+    appliedProjects: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Project',
     },
 });
 
@@ -40,10 +55,13 @@ const userSchema = new mongoose.Schema({
         type: String,
     },
     socials: {
-        type: [userSocials],
+        type: userSocials,
     },
     skills: {
-        type: [userSkills],
+        type: userSkills,
+    },
+    projects: {
+        type: projectActivitySchema,
     },
 });
 
