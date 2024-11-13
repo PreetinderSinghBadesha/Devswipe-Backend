@@ -3,6 +3,7 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
+const verifyToken = require('../middlewares/jwtMiddleware');
 require('dotenv').config();
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -47,6 +48,25 @@ router.post('/login', async (req, res) => {
         res.status(200).json({token: token});
     } catch (error) {
         res.status(500).json({error: "Login failed"});
+    }
+});
+
+
+router.post('/verify-login', async (req, res) => {
+    try {
+        const token = req.header('Authorization')?.replace('Bearer ', '');
+        if (!token) return res.status(401).json({ error: "No token given"});
+        try {
+            const decodedToken = jwt.verify(token, JWT_SECRET);
+            res.status(200).json({ tokenDetails: decodedToken });
+        } catch (error) {
+            res.status(401).json({ error: "Invalid Token" });
+        }
+    } catch (error) {
+        res.status(500).json({ 
+            error: "Failed to verify token",
+            details: error.message
+        })
     }
 });
 

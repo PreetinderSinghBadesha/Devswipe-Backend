@@ -24,6 +24,7 @@ const userSkills = new mongoose.Schema({
 const projectActivitySchema = new mongoose.Schema({
     ownProjects: {
         type: [mongoose.Schema.Types.ObjectId],
+        default: {},
         ref: 'Project',
     },
     likedProjects: {
@@ -33,6 +34,7 @@ const projectActivitySchema = new mongoose.Schema({
     },
     appliedProjects: {
         type: [mongoose.Schema.Types.ObjectId],
+        default: {},
         ref: 'Project',
     },
 });
