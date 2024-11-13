@@ -17,6 +17,13 @@ router.post('/create-project', verifyToken, async (req, res, next) => {
             techUsed
         });
         await project.save();
+
+        await User.findByIdAndUpdate(
+            req.userId,
+            { $addToSet: { 'projects.ownProjects': project._id } },
+            { new: true }
+        );
+
         res.status(200).json({
             message: 'Project added successfully'
         });
@@ -105,6 +112,7 @@ router.post('/apply-for-project', verifyToken, async (req, res, next) => {
             { $addToSet: { 'projects.appliedProjects': projectId } },
             { new: true }
         );
+        
         
         res.status(200).json({ message: 'Applied to project successfully' });
     } catch (error) {
