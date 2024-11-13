@@ -74,7 +74,6 @@ router.post('/like-project', verifyToken, async (req, res, next) => {
     }
 });
 
-
 router.get('/get-liked-projects', verifyToken, async (req, res, next) => {
    try {
     const user = await User.findById(req.userId).populate('projects.likedProjects');
@@ -91,5 +90,47 @@ router.get('/get-liked-projects', verifyToken, async (req, res, next) => {
         });
     }
 });
+
+
+router.post('/apply-for-project', verifyToken, async (req, res, next) => {
+    try {
+        const { projectId } = req.body;
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        await User.findByIdAndUpdate(
+            req.userId,
+            { $addToSet: { 'projects.appliedProjects': projectId } },
+            { new: true }
+        );
+        
+        res.status(200).json({ message: 'Applied to project successfully' });
+    } catch (error) {
+        res.status(500).json({ 
+                error: 'Failed to apply on project', 
+                details: error.message 
+        });
+    }
+});
+
+router.get('/get-applied-projects', verifyToken, async (req, res, next) => {
+    try {
+     const user = await User.findById(req.userId).populate('projects.appliedProjects');
+ 
+     if (!user) {
+         return res.status(404).json({ error: 'User not found' });
+     }
+     res.status(200).json( user.projects.appliedProjects);
+     
+     } catch (error) {
+         res.status(500).json({
+             error: 'Failed to fetch applied projects',
+             details: error.message
+         });
+     }
+ });
+
 
 module.exports = router;
