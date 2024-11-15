@@ -3,6 +3,7 @@ const router = express.Router();
 const verifyToken = require('../middlewares/jwtMiddleware');
 const Project = require('../models/Project');
 const User = require('../models/User');
+const Hackathon = require('../models/Hackathon');
 
 router.post('/create-project', verifyToken, async (req, res, next) => {
     try {
@@ -35,7 +36,55 @@ router.post('/create-project', verifyToken, async (req, res, next) => {
         });
     }
 });
+router.post('/create-hackathon', verifyToken, async (req, res, next) => {
+    try {
+        const { name, startingDate, endingDate, members, link, images, techUsed, location, hackathonType, duration } = req.body;
 
+        const hackathon = new Hackathon({
+            name,
+            owner: req.userId,
+            startingDate,
+            endingDate,
+            members,
+            link,
+            images,
+            techUsed,
+            location,
+            hackathonType,
+            duration,
+        });
+
+        await hackathon.save();
+
+        await User.findByIdAndUpdate(
+            req.userId,
+            { $addToSet: { 'hackathon.ownhackathon': hackathon._id } },
+            { new: true }
+        );
+
+        res.status(200).json({
+            message: 'Hackathon created successfully',
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            error: 'Failed to create hackathon',
+            details: error.message,
+        });
+    }
+});
+
+
+router.get('/get-hackathon', verifyToken, async (req, res, next) => {
+    try {
+        const hackathon = await Hackathon.find({});
+        res.status(200).json(hackathon);
+    } catch (error) {
+        res.status(500).json({
+            error: 'Failed to get projects'
+        });
+    }
+});
 router.get('/get-projects', verifyToken, async (req, res, next) => {
     try {
         const projects = await Project.find({});
@@ -102,26 +151,69 @@ router.get('/get-liked-projects', verifyToken, async (req, res, next) => {
 router.post('/apply-for-project', verifyToken, async (req, res, next) => {
     try {
         const { projectId } = req.body;
+
+        // Find the project by ID
         const project = await Project.findById(projectId);
         if (!project) {
             return res.status(404).json({ error: 'Project not found' });
         }
 
+        // Add the project ID to the user's appliedProjects list
         await User.findByIdAndUpdate(
             req.userId,
             { $addToSet: { 'projects.appliedProjects': projectId } },
             { new: true }
         );
-        
-        
+
+        // Add the user ID to the project's applied.appliedUsers list
+        await Project.findByIdAndUpdate(
+            projectId,
+            { $addToSet: { 'applied.appliedUsers': req.userId } },
+            { new: true }
+        );
+
         res.status(200).json({ message: 'Applied to project successfully' });
     } catch (error) {
         res.status(500).json({ 
-                error: 'Failed to apply on project', 
-                details: error.message 
+            error: 'Failed to apply for project', 
+            details: error.message 
         });
     }
 });
+
+router.post('/apply-for-hackathon', verifyToken, async (req, res, next) => {
+    try {
+        const { hackathonId } = req.body;
+
+        // Find the hackathon by ID
+        const hackathon = await Hackathon.findById(hackathonId);
+        if (!hackathon) {
+            return res.status(404).json({ error: 'Hackathon not found' });
+        }
+
+        // Add the hackathon ID to the user's appliedHackathons list
+        await User.findByIdAndUpdate(
+            req.userId,
+            { $addToSet: { 'hackathons.appliedHackathons': hackathonId } },
+            { new: true }
+        );
+
+        // Add the user ID to the hackathon's applied.appliedUsers list
+        await Hackathon.findByIdAndUpdate(
+            hackathonId,
+            { $addToSet: { 'applied.appliedUsers': req.userId } },
+            { new: true }
+        );
+
+        res.status(200).json({ message: 'Applied to hackathon successfully' });
+    } catch (error) {
+        res.status(500).json({ 
+            error: 'Failed to apply for hackathon', 
+            details: error.message 
+        });
+    }
+});
+
 
 router.get('/get-applied-projects', verifyToken, async (req, res, next) => {
     try {
