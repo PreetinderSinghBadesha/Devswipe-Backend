@@ -20,21 +20,21 @@ router.post('/add-members/:projectId',verifyToken, async (req,res,next) =>{
     }
 });
 
-router.post('/remove-members/:projectId',verifyToken, async (req,res,next) =>{
-    try{
-        const {members} = req.body;
-
+router.post('/remove-members/:projectId', verifyToken, async (req, res, next) => {
+    try {
+        const { members } = req.body; 
+        const memberIds = members.map((m) => m.member);
         await Project.findByIdAndUpdate(
             req.params.projectId,
-            { $pull: { members: { _id: { $in: members } } } },
+            { $pull: { members: { member: { $in: memberIds } } } },
             { new: true }
         );
-        res.status(200).json({ message: 'member removed'});
 
+        res.status(200).json({ message: 'Members removed successfully' });
     } catch (error) {
-        res.status(500).json({ 
-            error: "Failed to remove member",
-            details: error.message
+        res.status(500).json({
+            error: "Failed to remove members",
+            details: error.message,
         });
     }
 });
