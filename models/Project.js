@@ -56,6 +56,7 @@ const projectSchema = new mongoose.Schema({
     techUsed: {
         type: techSchema,
         required: true,
+        default: {},
     },
 });
 
