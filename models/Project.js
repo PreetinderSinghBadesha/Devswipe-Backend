@@ -26,6 +26,19 @@ const memberSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+}); 
+
+const appliedSchema = new mongoose.Schema({
+    likedUsers: {
+        type: [mongoose.Schema.Types.ObjectId],
+        default: {},
+        ref: 'User',
+    },
+    appliedUsers: {
+        type: [mongoose.Schema.Types.ObjectId],
+        default: {},
+        ref: 'User',
+    },
 });
 
 const projectSchema = new mongoose.Schema({
@@ -58,6 +71,11 @@ const projectSchema = new mongoose.Schema({
         required: true,
         default: {},
     },
+    applied:{
+        type: appliedSchema,
+        required: true,
+        default: {},
+    }
 });
 
 module.exports = mongoose.model('Project', projectSchema);

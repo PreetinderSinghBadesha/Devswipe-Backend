@@ -38,6 +38,23 @@ const projectActivitySchema = new mongoose.Schema({
         ref: 'Project',
     },
 });
+const hackathonActivitySchema = new mongoose.Schema({
+    ownHackathon: {
+        type: [mongoose.Schema.Types.ObjectId],
+        default: {},
+        ref: 'Hackathon',
+    },
+    likedHackathon: {
+        type: [mongoose.Schema.Types.ObjectId],
+        default: {},
+        ref: 'Hackathon',
+    },
+    appliedHackathon: {
+        type: [mongoose.Schema.Types.ObjectId],
+        default: {},
+        ref: 'Hackathon',
+    },
+});
 
 const userSchema = new mongoose.Schema({
     username: {
@@ -66,6 +83,9 @@ const userSchema = new mongoose.Schema({
     projects: {
         type: projectActivitySchema,
     },
+    hackathons:{
+        type: hackathonActivitySchema,
+    }
 });
 
 module.exports = mongoose.model('User', userSchema);
