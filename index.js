@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const authService = require('./services/auth');
 const usersRoute = require('./routes/userRoute');
 const projectsRoute = require('./routes/projectRoute');
+const adminRoute = require('./routes/adminRoute');
 require('dotenv').config();
 
 const PORT = process.env.PORT || 3000;
@@ -46,6 +47,7 @@ database.once('connected', () => {
 app.use('/auth', authService);
 app.use('/users', usersRoute);
 app.use('/projects',projectsRoute);
+app.use('/admin', adminRoute);
 
 app.listen(PORT, () => {
     console.log(`Server is running on Port ${PORT} ....`)
