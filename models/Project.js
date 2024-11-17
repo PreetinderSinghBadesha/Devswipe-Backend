@@ -3,14 +3,33 @@ const mongoose = require('mongoose');
 const techSchema = new mongoose.Schema({
     languages: {
         type: [String],
+        default: [],
         required: true,
     },
     frameworks: {
         type: [String],
+        default: [],
         required: true,
     },
     softwares: {
         type: [String],
+        default: [],
+        required: true,
+    },
+    categories: {
+        type: [String],
+        default: [],
+        required: true,
+    }
+});
+
+const coinRewardSchema = new mongoose.Schema({
+    powerCoins: {
+        type: Number,
+        required: true,
+    },
+    achievementCoins: {
+        type: Number,
         required: true,
     },
 });
@@ -20,23 +39,22 @@ const memberSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true,
-        // unique: true,
     },
     role: {
         type: String,
         required: true,
     },
-}); 
+});
 
 const appliedSchema = new mongoose.Schema({
     likedUsers: {
         type: [mongoose.Schema.Types.ObjectId],
-        default: {},
+        default: [],
         ref: 'User',
     },
     appliedUsers: {
         type: [mongoose.Schema.Types.ObjectId],
-        default: {},
+        default: [],
         ref: 'User',
     },
 });
@@ -56,25 +74,37 @@ const projectSchema = new mongoose.Schema({
     },
     members: {
         type: [memberSchema],
+        default: [], // Ensure empty array is set if no members are provided
+    },
+    description: {
+        type: String,
+        required: true,
+    },
+    coinReward: {
+        type: coinRewardSchema,
         required: true,
     },
     github: {
         type: String,
         unique: true,
     },
+    thumbnail: {
+        type: String,
+        required: true,
+    },
     images: {
         type: [String],
-        required: true,
+        default: [],
     },
     techUsed: {
         type: techSchema,
         required: true,
-        default: {},
+        default: { languages: [], frameworks: [], softwares: [], categories: [] }, // Set default values explicitly
     },
-    applied:{
+    applied: {
         type: appliedSchema,
         required: true,
-        default: {},
+        default: { likedUsers: [], appliedUsers: [] },
     }
 });
 
