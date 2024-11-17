@@ -42,7 +42,7 @@ router.post('/create-project', verifyToken, async (req, res, next) => {
 
         await User.findByIdAndUpdate(
             req.userId,
-            { $addToSet: { 'projects.ownProjects': project._id } },
+            { $addToSet: { 'projects.ownProjects': newProject._id } },
             { new: true }
         );
 

@@ -74,7 +74,7 @@ const projectSchema = new mongoose.Schema({
     },
     members: {
         type: [memberSchema],
-        default: [], // Ensure empty array is set if no members are provided
+        default: [],
     },
     description: {
         type: String,
@@ -99,7 +99,7 @@ const projectSchema = new mongoose.Schema({
     techUsed: {
         type: techSchema,
         required: true,
-        default: { languages: [], frameworks: [], softwares: [], categories: [] }, // Set default values explicitly
+        default: { languages: [], frameworks: [], softwares: [], categories: [] },
     },
     applied: {
         type: appliedSchema,
