@@ -7,17 +7,38 @@ const Hackathon = require('../models/Hackathon');
 
 router.post('/create-project', verifyToken, async (req, res, next) => {
     try {
-        const { name, startingDate, members, github, images, techUsed } = req.body;
-        const project = new Project({
+        const {
             name,
-            owner: req.userId,
+            owner,
             startingDate,
             members,
+            description,
+            coinReward,
             github,
-            images,
-            techUsed
+            thumbnail,
+            techUsed,
+            applied,
+        } = req.body;
+
+        const newProject = new Project({
+            name,
+            owner,
+            startingDate,
+            members: members || [],
+            description,
+            coinReward,
+            github,
+            thumbnail,
+            techUsed: techUsed || {
+                languages: [],
+                frameworks: [],
+                softwares: [],
+                categories: [],
+            },
+            applied: applied || { likedUsers: [], appliedUsers: [] },
         });
-        await project.save();
+
+        await newProject.save();
 
         await User.findByIdAndUpdate(
             req.userId,
@@ -26,16 +47,18 @@ router.post('/create-project', verifyToken, async (req, res, next) => {
         );
 
         res.status(200).json({
-            message: 'Project added successfully'
+            message: 'Project added successfully',
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({
             error: 'Failed to create project',
-            details: error.message
+            details: error.message,
         });
     }
 });
+
+
 router.post('/create-hackathon', verifyToken, async (req, res, next) => {
     try {
         const { name, startingDate, endingDate, members, link, images, techUsed, location, hackathonType, duration } = req.body;
@@ -85,16 +108,22 @@ router.get('/get-hackathon', verifyToken, async (req, res, next) => {
         });
     }
 });
+
 router.get('/get-projects', verifyToken, async (req, res, next) => {
     try {
-        const projects = await Project.find({});
+        const projects = await Project.find({})
+            .populate('members.member', 'username email')
+            .populate('applied.appliedUsers', 'username email');
+
         res.status(200).json(projects);
     } catch (error) {
         res.status(500).json({
-            error: 'Failed to get projects'
+            error: 'Failed to get projects',
+            details: error.message,
         });
     }
 });
+
 
 router.get('/get-user-projects', verifyToken, async (req, res, next) => {
     try {
@@ -106,6 +135,49 @@ router.get('/get-user-projects', verifyToken, async (req, res, next) => {
         });
     }
 });
+
+router.get('/project/:id', verifyToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const project = await Project.findById(id)
+            .populate('members.member', 'username email')
+            .populate('applied.appliedUsers', 'username email');
+
+        if (!project) {
+            return res.status(404).json({ error: 'Project not found' });
+        }
+
+        res.status(200).json(project);
+    } catch (error) {
+        res.status(500).json({
+            error: 'Failed to fetch project',
+            details: error.message,
+        });
+    }
+});
+
+router.get('/hackathon/:id', verifyToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const hackathon = await Hackathon.findById(id)
+            .populate('members', 'username email')
+            .populate('applied.appliedUsers', 'username email');
+
+        if (!hackathon) {
+            return res.status(404).json({ error: 'Hackathon not found' });
+        }
+
+        res.status(200).json(hackathon);
+    } catch (error) {
+        res.status(500).json({
+            error: 'Failed to fetch hackathon',
+            details: error.message,
+        });
+    }
+});
+
 
 router.post('/like-project', verifyToken, async (req, res, next) => {
     try {
@@ -152,34 +224,37 @@ router.post('/apply-for-project', verifyToken, async (req, res, next) => {
     try {
         const { projectId } = req.body;
 
-        // Find the project by ID
         const project = await Project.findById(projectId);
         if (!project) {
             return res.status(404).json({ error: 'Project not found' });
         }
 
-        // Add the project ID to the user's appliedProjects list
-        await User.findByIdAndUpdate(
-            req.userId,
-            { $addToSet: { 'projects.appliedProjects': projectId } },
-            { new: true }
-        );
+        // Check if the user already applied
+        if (project.applied.appliedUsers.includes(req.userId)) {
+            return res.status(400).json({ error: 'User already applied for this project' });
+        }
 
-        // Add the user ID to the project's applied.appliedUsers list
         await Project.findByIdAndUpdate(
             projectId,
             { $addToSet: { 'applied.appliedUsers': req.userId } },
             { new: true }
         );
 
+        await User.findByIdAndUpdate(
+            req.userId,
+            { $addToSet: { 'projects.appliedProjects': projectId } },
+            { new: true }
+        );
+
         res.status(200).json({ message: 'Applied to project successfully' });
     } catch (error) {
-        res.status(500).json({ 
-            error: 'Failed to apply for project', 
-            details: error.message 
+        res.status(500).json({
+            error: 'Failed to apply for project',
+            details: error.message,
         });
     }
 });
+
 
 router.post('/apply-for-hackathon', verifyToken, async (req, res, next) => {
     try {
