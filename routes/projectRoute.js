@@ -125,16 +125,43 @@ router.get('/get-projects', verifyToken, async (req, res, next) => {
 });
 
 
-router.get('/get-user-projects', verifyToken, async (req, res, next) => {
+router.get('/get-user-projects', verifyToken, async (req, res) => {
     try {
-        const projects = await Project.find({owner: req.userId});
-        res.status(200).json(projects);
+        const userId = req.userId;
+
+        if (!userId) {
+            return res.status(400).json({ error: "Invalid token or user ID" });
+        }
+
+        const user = await User.findById(userId)
+            .populate('projects.ownProjects')
+            .populate('projects.activeProjects')
+            .populate('projects.finishedProjects')
+            .populate('projects.likedProjects')
+            .populate('projects.appliedProjects');
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        const { ownProjects, activeProjects, finishedProjects, likedProjects, appliedProjects } = user.projects;
+
+        res.status(200).json({ 
+            ownProjects, 
+            activeProjects, 
+            finishedProjects, 
+            likedProjects, 
+            appliedProjects 
+        });
+
     } catch (error) {
         res.status(500).json({
-            error: 'Failed to get projects'
+            error: "Failed to fetch user projects",
+            details: error.message
         });
     }
 });
+
 
 router.get('/project/:id', verifyToken, async (req, res) => {
     try {
@@ -156,6 +183,8 @@ router.get('/project/:id', verifyToken, async (req, res) => {
         });
     }
 });
+
+
 
 router.get('/hackathon/:id', verifyToken, async (req, res) => {
     try {
